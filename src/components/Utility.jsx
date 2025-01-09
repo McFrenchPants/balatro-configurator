@@ -5,43 +5,39 @@ export function handleFileUpload(event, setData) {
     reader.onload = (e) => {
         try {
             const content = e.target.result;
+            // Find the P_CENTERS section
             const match = content.match(/self\.P_CENTERS\s*=\s*{([\s\S]*?)}\s*$/m);
+
             if (!match) throw new Error("Could not find P_CENTERS section");
 
             const parsedData = {};
-            let currentPos = 0;
-            const text = match[1];
+            const objectPattern = /(\w+)\s*=\s*{([^}]*)}/g; // Match objects
+            const objects = match[1].matchAll(objectPattern);
 
-            while (currentPos < text.length) {
-                // Match object key
-                const keyMatch = /(\w+)\s*=\s*{/.exec(text.slice(currentPos));
-                if (!keyMatch) break;
+            for (const obj of objects) {
+                const key = obj[1];
+                const properties = obj[2];
+                const itemData = {};
 
-                const key = keyMatch[1];
-                currentPos += keyMatch[0].length + keyMatch.index;
+                console.log("key:", key, "properties:", properties);
 
-                // Find matching closing brace
-                let bracketCount = 1;
-                let endPos = currentPos;
+                // Improved regex to match nested objects
+                const propertyPattern = /(\w+)\s*=\s*(\{[^}]*\}|[^,{}]+)/g;
+                const props = properties.matchAll(propertyPattern);
 
-                while (bracketCount > 0 && endPos < text.length) {
-                    if (text[endPos] === '{') bracketCount++;
-                    if (text[endPos] === '}') bracketCount--;
-                    endPos++;
+                for (const prop of props) {
+                    const [_, propKey, rawValue] = prop;
+                    if (propKey && rawValue) {
+                        const parsedValue = parseValue(rawValue.trim());
+                        itemData[propKey] = parsedValue;
+                    }
                 }
 
-                const objectContent = text.slice(currentPos, endPos - 1);
-                parsedData[key] = parseProperties(objectContent);
-                currentPos = endPos;
-
-                // Skip to next object
-                const commaMatch = /\s*,\s*/.exec(text.slice(currentPos));
-                if (commaMatch) {
-                    currentPos += commaMatch[0].length;
-                }
+                parsedData[key] = itemData;
             }
 
             setData(parsedData);
+            console.log("Loaded game data:", parsedData);
         } catch (err) {
             console.error("Error parsing file:", err.message);
         }
@@ -50,56 +46,37 @@ export function handleFileUpload(event, setData) {
     reader.readAsText(file);
 }
 
-function parseProperties(content) {
-    const properties = {};
-    let currentPos = 0;
-
-    while (currentPos < content.length) {
-        // Match property key
-        const keyMatch = /(\w+)\s*=\s*/.exec(content.slice(currentPos));
-        if (!keyMatch) break;
-
-        const key = keyMatch[1];
-        currentPos += keyMatch[0].length + keyMatch.index;
-
-        // Parse value based on type
-        let value;
-        if (content[currentPos] === '{') {
-            // Handle nested object
-            let bracketCount = 1;
-            let endPos = currentPos + 1;
-
-            while (bracketCount > 0 && endPos < content.length) {
-                if (content[endPos] === '{') bracketCount++;
-                if (content[endPos] === '}') bracketCount--;
-                endPos++;
-            }
-
-            const nestedContent = content.slice(currentPos + 1, endPos - 1);
-            value = parseProperties(nestedContent);
-            currentPos = endPos;
-        } else {
-            // Handle primitive values
-            const valueMatch = /([^,}]+)/.exec(content.slice(currentPos));
-            const rawValue = valueMatch[1].trim();
-            
-            // Convert to appropriate type
-            if (rawValue === 'true') value = true;
-            else if (rawValue === 'false') value = false;
-            else if (!isNaN(rawValue)) value = Number(rawValue);
-            else value = rawValue.replace(/['"]/g, '');
-
-            currentPos += valueMatch[0].length;
-        }
-
-        properties[key] = value;
-
-        // Skip comma and whitespace
-        const commaMatch = /\s*,\s*/.exec(content.slice(currentPos));
-        if (commaMatch) {
-            currentPos += commaMatch[0].length;
-        }
+function parseValue(value) {
+    // Check if the value looks like an object (it contains '{' and '}')
+    if (value.includes("{") && value.includes("}")) {
+        console.warn("Detected potential object:", value);
+        return parseObject(value);  // Handle object parsing
     }
 
-    return properties;
+    // Handle booleans
+    if (value === "true") return true;
+    if (value === "false") return false;
+
+    // Handle numbers
+    if (!isNaN(value)) return Number(value);
+
+    // Handle strings (remove quotes)
+    return value.replace(/['"]/g, "");
+}
+
+function parseObject(value) {
+    const objectData = {};
+    const innerPattern = /(\w+)\s*=\s*([^,{}]+)/g;
+    
+    // Log the object to see how it's being detected
+    console.log("Parsing object:", value);
+
+    const matches = value.matchAll(innerPattern);
+    for (const match of matches) {
+        const [_, key, val] = match;
+        // Recursively parse if the value looks like another object
+        objectData[key] = parseValue(val.trim());
+    }
+
+    return objectData;
 }
