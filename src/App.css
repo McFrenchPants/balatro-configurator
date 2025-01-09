@@ -1,0 +1,94 @@
+#root {
+  width: 100%;
+  text-align: center;
+  font-family: 'Jersey 15';
+}
+body {
+  display: block;
+  width: 100%;
+  font-family: 'Jersey 15';
+}
+.header{
+  position: relative;
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+.header img {
+  position: absolute;
+  top: -100%;
+  left: -50%;
+  animation: spin 60s linear infinite;
+  width: 200%;
+  z-index: -1;
+}
+.ace-logo {
+  position: relative;
+  top: 100%;
+  left: 50%;
+}
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+
+@keyframes spin {
+  from {
+    background-position: 50% 50%;
+    transform: rotate(0deg);
+  }
+  to {
+    background-position: 50% 50%;
+    transform: rotate(360deg);
+  }
+}
+@keyframes float {
+  0% {
+    transform: translate(0, 0px);
+  }
+  50% {
+    transform: translate(5px, 15px);
+  }
+  100% {
+    transform: translate(0, 0px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.menu-button {
+  transition: transform 0.3s, background-color 0.3s, color 0.3s;
+}
+.menu-button:hover {
+  transform: scale(1.1);
+  background-color: #4caf50;
+  color: white;
+}
+.nav-button:hover {
+  background-color: #e8a130;
+}
+
+.jersey-15-regular {
+  font-family: "Jersey 15", serif;
+  font-weight: 400;
+  font-style: normal;
+}
