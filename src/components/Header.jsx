@@ -6,7 +6,7 @@ const Header = ({height}) => {
     return (
         <>
             <Box sx={{alignContent: 'center', height: height}} className="header">
-                <img src="/header_bg.jpg" />
+                <img className="spinme" src="/header_bg.jpg" />
                 <div className='ace-logo'>
                 <DraggableImage 
                     src="/ace_config.png" 
