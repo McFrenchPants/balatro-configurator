@@ -13,7 +13,7 @@ body {
   overflow: hidden;
   transition: height 0.3s ease;
 }
-.header img {
+.header img.spinme {
   position: absolute;
   top: -100%;
   left: -50%;
@@ -23,8 +23,7 @@ body {
 }
 .ace-logo {
   position: relative;
-  top: 100%;
-  left: 50%;
+  left: 15%;
 }
 .logo {
   height: 6em;
@@ -39,7 +38,14 @@ body {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
-
+@keyframes discard {
+  0% {
+    transform: scale(1,1);
+  }
+  100% {
+    transform: scale(0,0);
+  }
+}
 @keyframes spin {
   from {
     background-position: 50% 50%;
